@@ -1,0 +1,10 @@
+Concatenated
+"CONTRACTS\contract_01\node_modules\@openzeppelin\contracts\access\Ownable.sol
+NO Red Flags found in this code. The code is creating a basic access control mechanism using the Ownable smart contract from OpenZeppelin Contracts. It provides a way to restrict certain functions to be used only by the owner of the contract. The code seems to be following best practices and there are no malicious patterns or vulnerabilities present. It also includes SPDX-License-Identifier.
+"
+"CONTRACTS\contract_01\node_modules\@openzeppelin\contracts\token\ERC20\ERC20.sol
+NO red flags were found in this solidity code.
+"
+"CONTRACTS\contract_01\node_modules\@openzeppelin\contracts\token\ERC20\ERC20.sol
+NO Red Flags found in this solidity code.
+"
