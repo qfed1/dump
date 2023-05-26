@@ -5,10 +5,10 @@ import os
 # The Ethereum address pattern
 eth_addr_pattern = re.compile(r'\b0x[a-fA-F0-9]{40}\b')
 
-# List of database paths
+# List of database filenames
 db_files = [
-    "C:/Users/evanb/git/AI/NEWFILES/OBEYORDIE/messages.db",
-    "C:/Users/evanb/git/AI/NEWFILES/OBEYORDIE/messagesvolume1.db"
+    "messages.db",
+    "messagesvolume1.db"
 ]
 
 # Create a list of dictionaries to store Ethereum addresses and associated messages from each database
@@ -41,7 +41,7 @@ for eth_addr in eth_addr_messages[0]:
         common_eth_addr_messages[eth_addr] = eth_addr_messages[0][eth_addr] + " " + eth_addr_messages[1][eth_addr]
 
 # Create a new database in the same directory as the script
-new_db_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "new_messages420.db")
+new_db_path = os.path.join(os.getcwd(), "new_messages420.db")
 new_conn = sqlite3.connect(new_db_path)
 new_c = new_conn.cursor()
 
