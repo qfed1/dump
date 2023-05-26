@@ -2,10 +2,13 @@ from keys import token
 import logging
 import sqlite3
 import asyncio
-from telegram import __version__ as TG_VER
+#from telegram import __version__ as TG_VER
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
+import pkg_resources
 from collections import defaultdict
+
+TG_VER = pkg_resources.get_distribution("telegram").version
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
