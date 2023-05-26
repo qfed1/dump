@@ -2,15 +2,14 @@ import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
 import time
 import sqlite3
 
 # Initialize WebDriver
 options = uc.ChromeOptions()
 options.add_argument('--disable-extensions')
-driver = uc.Chrome(options=options)
-
+driver = uc.Chrome(executable_path='/usr/bin/chromedriver', options=options)
 # Navigate to the Telegram web client
 driver.get('https://web.telegram.org/')
 

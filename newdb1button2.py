@@ -9,7 +9,7 @@ import sqlite3
 # Initialize WebDriver
 options = uc.ChromeOptions()
 options.add_argument('--disable-extensions')
-driver = uc.Chrome(options=options)
+driver = uc.Chrome(executable_path='/usr/bin/chromedriver', options=options)
 
 # Navigate to the Telegram web client
 driver.get('https://web.telegram.org/')
