@@ -1,8 +1,10 @@
 import sqlite3
 import re
+import os
 
 # Connect to the SQLite database
-conn = sqlite3.connect('C:\\Users\\evanb\\git\\AI\\NEWFILES\\OBEYORDIE\\new_messages420.db')
+db_path = os.path.join(os.getcwd(), 'new_messages420.db')
+conn = sqlite3.connect(db_path)
 
 # Create a cursor object
 cur = conn.cursor()
@@ -36,7 +38,8 @@ filtered_comments = filter_comments(comments)
 conn.close()
 
 # Save to new database
-conn_new = sqlite3.connect('C:\\Users\\evanb\\git\\AI\\NEWFILES\\OBEYORDIE\\filter_gold.db')
+new_db_path = os.path.join(os.getcwd(), 'filter_gold.db')
+conn_new = sqlite3.connect(new_db_path)
 cur_new = conn_new.cursor()
 
 # Create a new table in the new database
