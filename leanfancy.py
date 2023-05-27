@@ -51,6 +51,7 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
             row = cursor.fetchone()
 
     eth_address, message_text = row if row else ("", "")
+    message_text = message_text.replace("Make sure to join our Alpha Community: @NovelApes so we can make bank together during the next bulla!", "")
 
     # Create the links with the fetched eth_address
     links_text = "\n\n".join([
