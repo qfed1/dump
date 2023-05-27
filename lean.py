@@ -52,11 +52,25 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
 
     eth_address, message_text = row if row else ("", "")
 
+    # Create the links with the fetched eth_address
+    links_text = "\n\n".join([
+        f"Honeypot: https://honeypot.is/ethereum.html?address={eth_address}",
+        f"Tokensniffer: https://tokensniffer.com/token/{eth_address}",
+        f"Dextools: https://www.dextools.io/app/ether/pair-explorer/{eth_address}",
+        f"Dexscreener: https://dexscreener.com/ethereum/{eth_address}",
+        f"coinscan: https://www.coinscan.com/tokens/{eth_address}",
+        f"Holders: https://etherscan.io/token/{eth_address}#balances",
+        f"Owner: https://etherscan.io/address/{eth_address}",
+        f"Contract: https://etherscan.io/token/{eth_address}",
+        f"Uniswap: https://app.uniswap.org/#/swap?outputCurrency={eth_address}",
+        f"1inch: https://app.1inch.io/#/1/unified/swap/ETH/{eth_address}",
+    ])
+
     # Replace the desired phrases
     if message_text.startswith("Token Update Name:"):
-        message_text = "🪙 HYPE TOKEN UPDATE🚀" + message_text[19:]
+        message_text = "🪙 HYPE TOKEN UPDATE🚀" + message_text[19:] + "\n\n" + links_text
     elif message_text == "New Token Found !!":
-        message_text = "🪙 HYPE TOKEN APPROVED 🚀"
+        message_text = "🪙 HYPE TOKEN APPROVED 🚀" + "\n\n" + links_text
 
     message = f"Row {timer_beep_counter}: {eth_address} - {message_text}" if eth_address.strip() and message_text.strip() else "No more messages"
 
