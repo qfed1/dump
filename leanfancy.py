@@ -62,22 +62,22 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # Clean up the eth_address
     eth_address_clean = re.search(r'0x[a-fA-F0-9]{40}', eth_address)
-    eth_address_link = f"https://etherscan.io/tokens/{eth_address_clean.group()}" if eth_address_clean else ""
+    eth_address_link = f"https://etherscan.io/address/{eth_address_clean.group()}" if eth_address_clean else ""
 
-    etherscan_address_link = f"https://etherscan.io/tokens/{etherscan_address}"
+    etherscan_address_link = f"https://etherscan.io/address/{etherscan_address}"
 
     # Create the links with the fetched eth_address_link
     links_text = "\n\n".join([
-        f"Honeypot: https://honeypot.is/ethereum.html?address={eth_address_link}",
-        f"Tokensniffer: https://tokensniffer.com/token/{eth_address_link}",
-        f"Dextools: https://www.dextools.io/app/ether/pair-explorer/{eth_address_link}",
-        f"Dexscreener: https://dexscreener.com/ethereum/{eth_address_link}",
-        f"coinscan: https://www.coinscan.com/tokens/{eth_address_link}",
-        f"Holders: https://etherscan.io/token/{eth_address_link}#balances",
-        f"Owner: https://etherscan.io/address/{eth_address_link}",
-        f"Contract: https://etherscan.io/token/{eth_address_link}",
-        f"Uniswap: https://app.uniswap.org/#/swap?outputCurrency={eth_address_link}",
-        f"1inch: https://app.1inch.io/#/1/unified/swap/ETH/{eth_address_link}",
+        f"Honeypot: https://honeypot.is/ethereum.html?address={eth_address}",
+        f"Tokensniffer: https://tokensniffer.com/token/{eth_address}",
+        f"Dextools: https://www.dextools.io/app/ether/pair-explorer/{eth_address}",
+        f"Dexscreener: https://dexscreener.com/ethereum/{eth_address}",
+        f"coinscan: https://www.coinscan.com/tokens/{eth_address}",
+        f"Holders: https://etherscan.io/token/{eth_address}/#balances",
+        f"Owner: https://etherscan.io/address/{eth_address}",
+        f"Contract: https://etherscan.io/token/{eth_address}",
+        f"Uniswap: https://app.uniswap.org/#/swap?outputCurrency={eth_address}",
+        f"1inch: https://app.1inch.io/#/1/unified/swap/ETH/{eth_address",
         f"Etherscan: {etherscan_address_link}"
     ])
 
