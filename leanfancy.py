@@ -66,19 +66,16 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
         f"1inch: https://app.1inch.io/#/1/unified/swap/ETH/{eth_address}",
     ])
 
+    # Remove all text after "Scanners: Honeypot" and replace "Scanners: Honeypot" with "Scanners: "
+    scanner_index = message_text.find("Scanners: Honeypot")
+    if scanner_index != -1:
+        message_text = message_text[:scanner_index] + "Scanners: "
+
     # Split the message text into lines at each "|" character
     message_text = "\n\n".join(message_text.split("|"))
 
-    # Replace the desired phrases
-    if message_text.startswith("Token Update Name:"):
-        message_text = "🪙 HYPE TOKEN UPDATE🚀" + message_text[19:]
-    elif message_text == "New Token Found !!":
-        message_text = "🪙 HYPE TOKEN APPROVED 🚀"
-
-    message = f"Row {timer_beep_counter}: {eth_address} - {message_text}" if eth_address.strip() and message_text.strip() else "No more messages"
-
-    # Add the links to the end of the message
-    message += "\n\n" + links_text
+    # Create the final message
+    message = f"Row {timer_beep_counter}: {eth_address}\n\n{message_text}\n\n{links_text}"
 
     try:
         if len(message) <= MAX_MESSAGE_LENGTH:
