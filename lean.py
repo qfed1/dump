@@ -8,7 +8,7 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 import pkg_resources
 from collections import defaultdict
 
-TG_VER = pkg_resources.get_distribution("telegram").version
+TG_VER = pkg_resources.get_distribution("python-telegram-bot").version
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
