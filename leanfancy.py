@@ -77,7 +77,7 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
         f"Owner: https://etherscan.io/address/{eth_address}",
         f"Contract: https://etherscan.io/token/{eth_address}",
         f"Uniswap: https://app.uniswap.org/#/swap?outputCurrency={eth_address}",
-        f"1inch: https://app.1inch.io/#/1/unified/swap/ETH/{eth_address",
+        f"1inch: https://app.1inch.io/#/1/unified/swap/ETH/{eth_address}",
         f"Etherscan: {etherscan_address_link}"
     ])
 
