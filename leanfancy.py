@@ -2,6 +2,7 @@ from keys import token
 import logging
 import sqlite3
 import asyncio
+import re
 from telegram import __version__ as TG_VER
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
@@ -27,7 +28,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def fetch_message_after_wait(offset):
     await asyncio.sleep(5)
-    cursor.execute('SELECT eth_address, message FROM filtered_messages LIMIT 1 OFFSET ?', (offset,))
+    cursor.execute('SELECT eth_address, message FROM filtereed_messages LIMIT 1 OFFSET ?', (offset,))
     return cursor.fetchone()
 
 import telegram.error
@@ -58,7 +59,11 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
     etherscan_address = message_text[start:end].strip()
 
     message_text = message_text[:start] + message_text[end:]
-    eth_address_link = f"https://etherscan.io/tokens/{eth_address}"
+
+    # Clean up the eth_address
+    eth_address_clean = re.search(r'0x[a-fA-F0-9]{40}', eth_address)
+    eth_address_link = f"https://etherscan.io/tokens/{eth_address_clean.group()}" if eth_address_clean else ""
+
     etherscan_address_link = f"https://etherscan.io/tokens/{etherscan_address}"
 
     # Create the links with the fetched eth_address_link
