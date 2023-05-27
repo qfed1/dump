@@ -2,6 +2,7 @@ from keys import token
 import logging
 import sqlite3
 import asyncio
+import re
 from telegram import __version__ as TG_VER
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
@@ -53,29 +54,47 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
     eth_address, message_text = row if row else ("", "")
     message_text = message_text.replace("Make sure to join our Alpha Community: @NovelApes so we can make bank together during the next bulla!", "")
 
-    # Create the links with the fetched eth_address
-    links_text = "\n\n".join([
-        f"Honeypot: https://honeypot.is/ethereum.html?address={eth_address}",
-        f"Tokensniffer: https://tokensniffer.com/token/{eth_address}",
-        f"Dextools: https://www.dextools.io/app/ether/pair-explorer/{eth_address}",
-        f"Dexscreener: https://dexscreener.com/ethereum/{eth_address}",
-        f"coinscan: https://www.coinscan.com/tokens/{eth_address}",
-        f"Holders: https://etherscan.io/token/{eth_address}#balances",
-        f"Owner: https://etherscan.io/address/{eth_address}",
-        f"Contract: https://etherscan.io/token/{eth_address}",
-        f"Uniswap: https://app.uniswap.org/#/swap?outputCurrency={eth_address}",
-        f"1inch: https://app.1inch.io/#/1/unified/swap/ETH/{eth_address}",
-    ])
-
-    # Remove all text after "Scanners: Honeypot" and replace "Scanners: Honeypot" with "Scanners: "
+    # Search for text between "Etherscan The Address" and "Comment"
+    match = re.search(r"Etherscan The Address(.*?)Comment", message_text)
+    if match:
+        extracted_eth_address = match.group(1).strip()
+        # Add new link to links_text
+        links_text = "\n\n".join([
+            f"Etherscan: https://etherscan.io/address/{extracted_eth_address}",
+            f"Honeypot: https://honeypot.is/ethereum.html?address={eth_address}",
+            f"Tokensniffer: https://tokensniffer.com/token/{eth_address}",
+            f"Dextools: https://www.dextools.io/app/ether/pair-explorer/{eth_address}",
+            f"Dexscreener: https://dexscreener.com/ethereum/{eth_address}",
+            f"coinscan: https://www.coinscan.com/tokens/{eth_address}",
+            f"Holders: https://etherscan.io/token/{eth_address}#balances",
+            f"Owner: https://etherscan.io/address/{eth_address}",
+            f"Contract: https://etherscan.io/token/{eth_address}",
+            f"Uniswap: https://app.uniswap.org/#/swap?outputCurrency={eth_address}",
+            f"1inch: https://app.1inch.io/#/1/unified/swap/ETH/{eth_address}",
+        ])
+        # Remove the matched text from message_text
+        message_text = message_text.replace(match.group(0), "")
+    else:
+        # No match found; add the standard links
+        links_text = "\n\n".join([
+            f"Honeypot: https://honeypot.is/ethereum.html?address={eth_address}",
+            f"Tokensniffer: https://tokensniffer.com/token/{eth_address}",
+            f"Dextools: https://www.dextools.io/app/ether/pair-explorer/{eth_address}",
+            f"Dexscreener: https://dexscreener.com/ethereum/{eth_address}",
+            f"coinscan: https://www.coinscan.com/tokens/{eth_address}",
+            f"Holders: https://etherscan.io/token/{eth_address}#balances",
+            f"Owner: https://etherscan.io/address/{eth_address}",
+            f"Contract: https://etherscan.io/token/{eth_address}",
+            f"Uniswap: https://app.uniswap.org/#/swap?outputCurrency={eth_address}",
+            f"1inch: https://app.1inch.io/#/1/unified/swap/ETH/{eth_address}",
+        ])
+    
     scanner_index = message_text.find("Scanners: Honeypot")
     if scanner_index != -1:
         message_text = message_text[:scanner_index] + "Scanners: "
 
-    # Split the message text into lines at each "|" character
     message_text = "\n\n".join(message_text.split("|"))
 
-    # Create the final message
     message = f"Row {timer_beep_counter}: {eth_address}\n\n{message_text}\n\n{links_text}"
 
     try:
@@ -86,10 +105,10 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
             for i, msg in enumerate(messages, 1):
                 await context.bot.send_message(job.chat_id, text=f"{msg}\n\nPart {i}/{len(messages)}")
     except telegram.error.RetryAfter as e:
-        await asyncio.sleep(e.retry_after)  # Wait for the specified time before retrying
-        job_warnings[job.name] += 1  # Increment the warning count for this job
+        await asyncio.sleep(e.retry_after)  
+        job_warnings[job.name] += 1  
     else:
-        job_warnings[job.name] = 0  # Reset the count if we successfully sent a message
+        job_warnings[job.name] = 0  
 
     timer_beep_counter += 1
     print(f"Beep! {job.data} seconds are over! This is beep number {timer_beep_counter}.")
@@ -124,17 +143,18 @@ async def set_timer(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 async def unset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     chat_id = update.message.chat_id
     job_removed = remove_job_if_exists(str(chat_id), context)
-    text = "Timer successfully cancelled!" if job_removed else "You have no active timer."
+    text = "Timer was not set." if not job_removed else "Timer was unset!"
     await update.message.reply_text(text)
 
-def main() -> None:
-    application = Application.builder().token(token).build()
+async def main() -> None:
+    application = Application(
+        token=token, context_types=ContextTypes.DEFAULT_TYPE, debug=True
+    )
 
-    application.add_handler(CommandHandler(["start", "help"], start))
-    application.add_handler(CommandHandler("set", set_timer))
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("set", set_timer, pass_args=True))
     application.add_handler(CommandHandler("unset", unset))
 
-    application.run_polling()
+    application.run()
 
-if __name__ == "__main__":
-    main()
+asyncio.run(main())
