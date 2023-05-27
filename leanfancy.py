@@ -55,10 +55,11 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
 
     start = message_text.find("Etherscan The Address") + len("Etherscan The Address")
     end = message_text.find("Comment")
-    eth_address = message_text[start:end].strip()
+    etherscan_address = message_text[start:end].strip()
 
     message_text = message_text[:start] + message_text[end:]
     eth_address_link = f"https://etherscan.io/tokens/{eth_address}"
+    etherscan_address_link = f"https://etherscan.io/tokens/{etherscan_address}"
 
     # Create the links with the fetched eth_address_link
     links_text = "\n\n".join([
@@ -72,6 +73,7 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
         f"Contract: https://etherscan.io/token/{eth_address_link}",
         f"Uniswap: https://app.uniswap.org/#/swap?outputCurrency={eth_address_link}",
         f"1inch: https://app.1inch.io/#/1/unified/swap/ETH/{eth_address_link}",
+        f"Etherscan: {etherscan_address_link}"
     ])
 
     # Remove all text after "Scanners: Honeypot" and replace "Scanners: Honeypot" with "Scanners: "
