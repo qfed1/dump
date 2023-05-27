@@ -1,4 +1,3 @@
-import re
 from keys import token
 import logging
 import sqlite3
@@ -67,6 +66,9 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
         f"1inch: https://app.1inch.io/#/1/unified/swap/ETH/{eth_address}",
     ])
 
+    # Split the message text into lines at each "|" character
+    message_text = "\n".join(message_text.split("|"))
+
     # Replace the desired phrases
     if message_text.startswith("Token Update Name:"):
         message_text = "🪙 HYPE TOKEN UPDATE🚀" + message_text[19:]
@@ -78,16 +80,13 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
     # Add the links to the end of the message
     message += "\n\n" + links_text
 
-    # Bolding words with colon
-    message = re.sub(r"(\w+):", r"**\1:**", message)
-
     try:
         if len(message) <= MAX_MESSAGE_LENGTH:
-            await context.bot.send_message(job.chat_id, text=message, parse_mode='Markdown')
+            await context.bot.send_message(job.chat_id, text=message)
         else:
             messages = [message[i:i+MAX_MESSAGE_LENGTH] for i in range(0, len(message), MAX_MESSAGE_LENGTH)]
             for i, msg in enumerate(messages, 1):
-                await context.bot.send_message(job.chat_id, text=f"{msg}\n\nPart {i}/{len(messages)}", parse_mode='Markdown')
+                await context.bot.send_message(job.chat_id, text=f"{msg}\n\nPart {i}/{len(messages)}")
     except telegram.error.RetryAfter as e:
         await asyncio.sleep(e.retry_after)  # Wait for the specified time before retrying
         job_warnings[job.name] += 1  # Increment the warning count for this job
