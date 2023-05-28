@@ -1,47 +1,43 @@
-from keys import token
-import logging
-import sqlite3
 import asyncio
+import logging
+import os
 import re
 import subprocess
-import os
-import sys
-import time
+import sqlite3
+from collections import defaultdict
 from telegram import __version__ as TG_VER
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
-from collections import defaultdict
-from threading import Timer
+from keys import token
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 
-timer_beep_counter = int(input("Enter a starting beep counter: "))
-MAX_MESSAGE_LENGTH = 4030
-
-last_refresh_time = 0
 db_path = 'filter_gold.db'  # Path to the SQLite database
+archive_db_path = 'filter_gold_archive.db'
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
-# Create a dictionary to store the count of warnings for each job
 job_warnings = defaultdict(int)
+timer_beep_counter = int(input("Enter a starting beep counter: "))
+MAX_MESSAGE_LENGTH = 4030
+last_refresh_time = 0
 
-def run_script(script):
-    subprocess.run([sys.executable, script])
+def archive_db():
+    if os.path.exists(archive_db_path):
+        os.remove(archive_db_path)
+    
+    shutil.copyfile(db_path, archive_db_path)
 
-def prompt_timeout(prompt, timeout=5):
-    print(prompt + f' (Auto-continuing in {timeout} seconds...)', end='', flush=True)
+def check_in_archive(eth_address, message):
+    conn_archive = sqlite3.connect(archive_db_path)
+    cursor_archive = conn_archive.cursor()
 
-    timer = Timer(timeout, os.kill, [os.getpid(), signal.SIGINT])
-    try:
-        timer.start()
-        return input().strip().lower() == 'y'
-    except KeyboardInterrupt:
-        return True
-    finally:
-        timer.cancel()
+    cursor_archive.execute('SELECT * FROM filtered_messages WHERE eth_address = ? AND message = ?', (eth_address, message))
+    data = cursor_archive.fetchone()
+
+    return data is not None
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("Hi! Use /set <seconds> to set a timer")
@@ -59,7 +55,6 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
     job = context.job
 
     if job_warnings[job.name] >= 5:
-        # Skip this execution if we've had 5 warnings in a row
         return
 
     cursor.execute('SELECT eth_address, message FROM filtered_messages LIMIT 1 OFFSET ?', (timer_beep_counter,))
@@ -67,11 +62,13 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
     if row is None:
         row = await fetch_message_after_wait(timer_beep_counter)
         if row is None:
-            last_refresh_time = 0
-            cursor.execute('SELECT eth_address, message FROM filtered_messages LIMIT 1') 
-            row = cursor.fetchone()
+            print("Reached end of file, restarting the entire process...")
+            main()  # Restart the main function (this will restart the whole process)
 
     eth_address, message_text = row if row else ("", "")
+    if check_in_archive(eth_address, message_text):
+        return
+
     message_text = message_text.replace("Make sure to join our Alpha Community: @NovelApes so we can make bank together during the next bulla!", "")
 
     start = message_text.find("Etherscan The Address") + len("Etherscan The Address")
@@ -80,13 +77,11 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
 
     message_text = message_text[:start] + message_text[end:]
 
-    # Clean up the eth_address
     eth_address_clean = re.search(r'0x[a-fA-F0-9]{40}', eth_address)
     eth_address_link = f"https://etherscan.io/address/{eth_address_clean.group()}" if eth_address_clean else ""
 
     etherscan_address_link = f"https://etherscan.io/address/{etherscan_address}"
 
-    # Create the links with the fetched eth_address_link
     links_text = "\n\n".join([
         f"Honeypot: https://honeypot.is/ethereum.html?address={eth_address}",
         f"Tokensniffer: https://tokensniffer.com/token/{eth_address}",
@@ -101,15 +96,12 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
         f"Etherscan: {etherscan_address_link}"
     ])
 
-    # Remove all text after "Scanners: Honeypot" and replace "Scanners: Honeypot" with "Scanners: "
     scanner_index = message_text.find("Scanners: Honeypot")
     if scanner_index != -1:
         message_text = message_text[:scanner_index] + "Scanners: "
 
-    # Split the message text into lines at each "|" character
     message_text = "\n\n".join(message_text.split("|"))
 
-    # Create the final message
     message = f"Row {timer_beep_counter}: {eth_address_link}\n\n{message_text}\n\n{links_text}"
 
     try:
@@ -120,18 +112,13 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
             for i, msg in enumerate(messages, 1):
                 await context.bot.send_message(job.chat_id, text=f"{msg}\n\nPart {i}/{len(messages)}")
     except telegram.error.RetryAfter as e:
-        await asyncio.sleep(e.retry_after)  # Wait for the specified time before retrying
-        job_warnings[job.name] += 1  # Increment the warning count for this job
+        await asyncio.sleep(e.retry_after)  
+        job_warnings[job.name] += 1  
     else:
-        job_warnings[job.name] = 0  # Reset the count if we successfully sent a message
+        job_warnings[job.name] = 0  
 
     timer_beep_counter += 1
     print(f"Beep! {job.data} seconds are over! This is beep number {timer_beep_counter}.")
-
-    if row is None:
-        if prompt_timeout('Reached the end. Do you want to quit? Y/N:'):
-            print("Quitting...")
-            sys.exit(0)
 
 def remove_job_if_exists(name: str, context: ContextTypes.DEFAULT_TYPE) -> bool:
     current_jobs = context.job_queue.get_jobs_by_name(name)
@@ -167,19 +154,25 @@ async def unset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(text)
 
 def main() -> None:
-    while True:
-        if os.path.exists(db_path):
-            os.remove(db_path)
-        run_script('filter.py')
-        run_script('newfilter.py')
+    # Archive data before deleting the db
+    archive_db()
 
-        application = Application.builder().token(token).build()
+    if os.path.exists(db_path):
+        os.remove(db_path)
 
-        application.add_handler(CommandHandler(["start", "help"], start))
-        application.add_handler(CommandHandler("set", set_timer))
-        application.add_handler(CommandHandler("unset", unset))
+    subprocess.run(["python3", "filter.py"])
+    subprocess.run(["python3", "newfilter.py"])
 
-        application.run_polling()
+    global conn, cursor
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    app = Application(token, use_context=True)
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("set", set_timer, pass_args=True, run_async=True))
+    app.add_handler(CommandHandler("unset", unset, run_async=True))
+
+    app.run()
 
 if __name__ == "__main__":
     main()
