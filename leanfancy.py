@@ -24,7 +24,11 @@ cursor = conn.cursor()
 job_warnings = defaultdict(int)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text("Hi! Use /set <seconds> to set a timer")
+    await update.message.reply_text("Hi! Timer is set for 3 seconds")
+
+    chat_id = update.effective_message.chat_id
+    context.job_queue.run_repeating(alarm, 3, context={'chat_id': chat_id})
+
 
 async def fetch_message_after_wait(offset):
     await asyncio.sleep(5)
@@ -125,9 +129,6 @@ async def unset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 def main() -> None:
     application = Application.builder().token(token).build()
-
-    # Add the timer with a delay of 3 seconds.
-    application.job_queue.run_repeating(alarm, 3)
 
     application.add_handler(CommandHandler(["start", "help"], start))
     application.add_handler(CommandHandler("unset", unset))
