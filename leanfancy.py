@@ -126,13 +126,11 @@ async def unset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 def main() -> None:
     application = Application.builder().token(token).build()
 
+    # Add the timer with a delay of 3 seconds.
+    application.job_queue.run_repeating(alarm, 3)
+
     application.add_handler(CommandHandler(["start", "help"], start))
     application.add_handler(CommandHandler("unset", unset))
-    
-    # Set the timer to 3 seconds for every chat upon start
-    for chat in application.chats:
-        chat_id = chat.id
-        application.job_queue.run_repeating(alarm, 3, chat_id=chat_id, name=str(chat_id), data=3)
 
     application.run_polling()
 
