@@ -30,6 +30,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     context.job_queue.run_repeating(alarm, 3, context={'chat_id': chat_id})
 
 
+
 async def fetch_message_after_wait(offset):
     await asyncio.sleep(5)
     cursor.execute('SELECT eth_address, message FROM filtereed_messages LIMIT 1 OFFSET ?', (offset,))
