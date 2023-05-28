@@ -1,43 +1,34 @@
-import asyncio
+from keys import token
 import logging
-import os
-import re
-import subprocess
 import sqlite3
-from collections import defaultdict
+import asyncio
+import re
+import os
+import subprocess
 from telegram import __version__ as TG_VER
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
-from keys import token
+from collections import defaultdict
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 
+timer_beep_counter = int(input("Enter a starting beep counter: "))
+MAX_MESSAGE_LENGTH = 4030
+
+last_refresh_time = 0
 db_path = 'filter_gold.db'  # Path to the SQLite database
-archive_db_path = 'filter_gold_archive.db'
+archive_db_path = 'filter_gold_archive.db'  # Path to the archive SQLite database
+
 conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
+conn_archive = sqlite3.connect(archive_db_path)
+cursor_archive = conn_archive.cursor()
+
+# Create a dictionary to store the count of warnings for each job
 job_warnings = defaultdict(int)
-timer_beep_counter = int(input("Enter a starting beep counter: "))
-MAX_MESSAGE_LENGTH = 4030
-last_refresh_time = 0
-
-def archive_db():
-    if os.path.exists(archive_db_path):
-        os.remove(archive_db_path)
-    
-    shutil.copyfile(db_path, archive_db_path)
-
-def check_in_archive(eth_address, message):
-    conn_archive = sqlite3.connect(archive_db_path)
-    cursor_archive = conn_archive.cursor()
-
-    cursor_archive.execute('SELECT * FROM filtered_messages WHERE eth_address = ? AND message = ?', (eth_address, message))
-    data = cursor_archive.fetchone()
-
-    return data is not None
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("Hi! Use /set <seconds> to set a timer")
@@ -55,6 +46,7 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
     job = context.job
 
     if job_warnings[job.name] >= 5:
+        # Skip this execution if we've had 5 warnings in a row
         return
 
     cursor.execute('SELECT eth_address, message FROM filtered_messages LIMIT 1 OFFSET ?', (timer_beep_counter,))
@@ -62,8 +54,7 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
     if row is None:
         row = await fetch_message_after_wait(timer_beep_counter)
         if row is None:
-            print("Reached end of file, restarting the entire process...")
-            main()  # Restart the main function (this will restart the whole process)
+            main()
 
     eth_address, message_text = row if row else ("", "")
     if check_in_archive(eth_address, message_text):
@@ -77,11 +68,13 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
 
     message_text = message_text[:start] + message_text[end:]
 
+    # Clean up the eth_address
     eth_address_clean = re.search(r'0x[a-fA-F0-9]{40}', eth_address)
     eth_address_link = f"https://etherscan.io/address/{eth_address_clean.group()}" if eth_address_clean else ""
 
     etherscan_address_link = f"https://etherscan.io/address/{etherscan_address}"
 
+    # Create the links with the fetched eth_address_link
     links_text = "\n\n".join([
         f"Honeypot: https://honeypot.is/ethereum.html?address={eth_address}",
         f"Tokensniffer: https://tokensniffer.com/token/{eth_address}",
@@ -96,12 +89,15 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
         f"Etherscan: {etherscan_address_link}"
     ])
 
+    # Remove all text after "Scanners: Honeypot" and replace "Scanners: Honeypot" with "Scanners: "
     scanner_index = message_text.find("Scanners: Honeypot")
     if scanner_index != -1:
         message_text = message_text[:scanner_index] + "Scanners: "
 
+    # Split the message text into lines at each "|" character
     message_text = "\n\n".join(message_text.split("|"))
 
+    # Create the final message
     message = f"Row {timer_beep_counter}: {eth_address_link}\n\n{message_text}\n\n{links_text}"
 
     try:
@@ -112,10 +108,10 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
             for i, msg in enumerate(messages, 1):
                 await context.bot.send_message(job.chat_id, text=f"{msg}\n\nPart {i}/{len(messages)}")
     except telegram.error.RetryAfter as e:
-        await asyncio.sleep(e.retry_after)  
-        job_warnings[job.name] += 1  
+        await asyncio.sleep(e.retry_after)  # Wait for the specified time before retrying
+        job_warnings[job.name] += 1  # Increment the warning count for this job
     else:
-        job_warnings[job.name] = 0  
+        job_warnings[job.name] = 0  # Reset the count if we successfully sent a message
 
     timer_beep_counter += 1
     print(f"Beep! {job.data} seconds are over! This is beep number {timer_beep_counter}.")
@@ -153,26 +149,32 @@ async def unset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     text = "Timer successfully cancelled!" if job_removed else "You have no active timer."
     await update.message.reply_text(text)
 
-def main() -> None:
-    # Archive data before deleting the db
-    archive_db()
+def check_in_archive(eth_address, message):
+    cursor_archive.execute('SELECT * FROM filtered_messages WHERE eth_address = ? AND message = ?', (eth_address, message))
+    row = cursor_archive.fetchone()
+    if row is not None:
+        return True
+    else:
+        cursor_archive.execute('INSERT INTO filtered_messages (eth_address, message) VALUES (?, ?)', (eth_address, message))
+        conn_archive.commit()
+        return False
 
+def main():
     if os.path.exists(db_path):
         os.remove(db_path)
 
-    subprocess.run(["python3", "filter.py"])
-    subprocess.run(["python3", "newfilter.py"])
+    os.system("python3 filter.py")
+    os.system("python3 newfilter.py")
 
-    global conn, cursor
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
+    Application(
+        token=token,
+        handlers=[
+            CommandHandler("start", start),
+            CommandHandler("set", set_timer),
+            CommandHandler("unset", unset),
+        ],
+        context_types=ContextTypes(DEFAULT_TYPE=asyncio.run),
+    ).start()
 
-    app = Application(token, use_context=True)
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("set", set_timer, pass_args=True, run_async=True))
-    app.add_handler(CommandHandler("unset", unset, run_async=True))
-
-    app.run()
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
