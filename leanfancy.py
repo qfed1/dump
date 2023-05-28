@@ -3,10 +3,15 @@ import logging
 import sqlite3
 import asyncio
 import re
+import subprocess
+import os
+import sys
+import time
 from telegram import __version__ as TG_VER
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 from collections import defaultdict
+from threading import Timer
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
@@ -22,6 +27,21 @@ cursor = conn.cursor()
 
 # Create a dictionary to store the count of warnings for each job
 job_warnings = defaultdict(int)
+
+def run_script(script):
+    subprocess.run([sys.executable, script])
+
+def prompt_timeout(prompt, timeout=5):
+    print(prompt + f' (Auto-continuing in {timeout} seconds...)', end='', flush=True)
+
+    timer = Timer(timeout, os.kill, [os.getpid(), signal.SIGINT])
+    try:
+        timer.start()
+        return input().strip().lower() == 'y'
+    except KeyboardInterrupt:
+        return True
+    finally:
+        timer.cancel()
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text("Hi! Use /set <seconds> to set a timer")
@@ -108,6 +128,11 @@ async def alarm(context: ContextTypes.DEFAULT_TYPE) -> None:
     timer_beep_counter += 1
     print(f"Beep! {job.data} seconds are over! This is beep number {timer_beep_counter}.")
 
+    if row is None:
+        if prompt_timeout('Reached the end. Do you want to quit? Y/N:'):
+            print("Quitting...")
+            sys.exit(0)
+
 def remove_job_if_exists(name: str, context: ContextTypes.DEFAULT_TYPE) -> bool:
     current_jobs = context.job_queue.get_jobs_by_name(name)
     if not current_jobs:
@@ -142,13 +167,19 @@ async def unset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(text)
 
 def main() -> None:
-    application = Application.builder().token(token).build()
+    while True:
+        if os.path.exists(db_path):
+            os.remove(db_path)
+        run_script('filter.py')
+        run_script('newfilter.py')
 
-    application.add_handler(CommandHandler(["start", "help"], start))
-    application.add_handler(CommandHandler("set", set_timer))
-    application.add_handler(CommandHandler("unset", unset))
+        application = Application.builder().token(token).build()
 
-    application.run_polling()
+        application.add_handler(CommandHandler(["start", "help"], start))
+        application.add_handler(CommandHandler("set", set_timer))
+        application.add_handler(CommandHandler("unset", unset))
+
+        application.run_polling()
 
 if __name__ == "__main__":
     main()
