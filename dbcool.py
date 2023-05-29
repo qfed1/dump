@@ -35,19 +35,19 @@ for offset in range(row_count):
         message_text = message_text[:scanner_index] + "Scanners: "
     message_text = "\n\n".join(message_text.split("|"))
     links_text = "\n\n".join([
-        f"Honeypot: https://honeypot.is/ethereum.html?address={eth_address}",
-        f"Tokensniffer: https://tokensniffer.com/token/{eth_address}",
-        f"Dextools: https://www.dextools.io/app/ether/pair-explorer/{eth_address}",
-        f"Dexscreener: https://dexscreener.com/ethereum/{eth_address}",
-        f"coinscan: https://www.coinscan.com/tokens/{eth_address}",
-        f"Holders: https://etherscan.io/token/{eth_address}/#balances",
-        f"Owner: https://etherscan.io/address/{eth_address}",
-        f"Contract: https://etherscan.io/token/{eth_address}",
-        f"Uniswap: https://app.uniswap.org/#/swap?outputCurrency={eth_address}",
-        f"1inch: https://app.1inch.io/#/1/unified/swap/ETH/{eth_address}",
-        f"Etherscan: {etherscan_address_link}"
+        "Honeypot: " + f"https://honeypot.is/ethereum.html?address={eth_address}",
+        "Tokensniffer: " + f"https://tokensniffer.com/token/{eth_address}",
+        "Dextools: " + f"https://www.dextools.io/app/ether/pair-explorer/{eth_address}",
+        "Dexscreener: " + f"https://dexscreener.com/ethereum/{eth_address}",
+        "coinscan: " + f"https://www.coinscan.com/tokens/{eth_address}",
+        "Holders: " + f"https://etherscan.io/token/{eth_address}/#balances",
+        "Owner: " + f"https://etherscan.io/address/{eth_address}",
+        "Contract: " + f"https://etherscan.io/token/{eth_address}",
+        "Uniswap: " + f"https://app.uniswap.org/#/swap?outputCurrency={eth_address}",
+        "1inch: " + f"https://app.1inch.io/#/1/unified/swap/ETH/{eth_address}",
+        "Etherscan: " + etherscan_address_link
     ])
-    new_message = f"Row {offset}: {eth_address_link}\n\n{message_text}\n\n{links_text}"
+    new_message = f"Row {offset}: {eth_address_link}\n\n{message_text}\n\nResources:\n\n{links_text}"
     new_cursor.execute('INSERT INTO filtered_messages VALUES (?, ?)', (eth_address, new_message))
     if offset % 1000 == 0:  # commit every 1000 inserts to speed up the process
         new_conn.commit()
