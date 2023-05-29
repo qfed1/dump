@@ -3,6 +3,7 @@ import aiosqlite
 from telegram.ext import ApplicationBuilder
 from keys import token as token1
 from keys import chatidmaster
+
 bot_token = token1
 chat_id = chatidmaster
 
@@ -40,8 +41,18 @@ async def mark_as_sent(db_path, msg):
     await cursor.close()
     await db.close()
 
+# Function to initialize the sent_messages database
+async def init_db(db_path):
+    db = await aiosqlite.connect(db_path)
+    cursor = await db.cursor()
+    await cursor.execute("CREATE TABLE IF NOT EXISTS messages (message TEXT)")
+    await db.commit()
+    await cursor.close()
+    await db.close()
+
 # Main function to fetch data from database and send it
 async def main():
+    await init_db("sent_messages.db")  # initialize the sent_messages database
     while True:
         rows = await fetch_rows_from_db("filtered_gold.db")
         for row in rows:
