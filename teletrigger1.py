@@ -57,13 +57,16 @@ async def main():
     while True:
         rows = await fetch_rows_from_db("filtered_gold.db")
         for row in rows:
+            eth_address = row[0]  # Get the Ethereum address from the row
             msg = row[1]  # Get the message from the row
             # Remove unwanted characters
             msg = msg.replace('\\n\\n', '\n\n').replace('\\n', '')
-            if not await is_sent("sent_messages.db", msg):
+            # Add Ethereum address to the beginning of the message
+            full_msg = eth_address + '\n' + msg
+            if not await is_sent("sent_messages.db", full_msg):
                 await asyncio.sleep(2)
-                await send_more(chat_id, msg)
-                await mark_as_sent("sent_messages.db", msg)
+                await send_more(chat_id, full_msg)
+                await mark_as_sent("sent_messages.db", full_msg)
         await asyncio.sleep(5)  # wait for 5 seconds before polling again
 
 # Run the main function
