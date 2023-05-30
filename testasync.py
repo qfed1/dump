@@ -1,7 +1,7 @@
 import sqlite3
 
 # connect to the SQLite database
-connection = sqlite3.connect('new_messages420.db')
+connection = sqlite3.connect('filter_gold.db')
 
 # create a cursor object using cursor() method
 cursor = connection.cursor()
@@ -11,7 +11,7 @@ eth_address = '0x123abc...'
 message = 'This is a test message.'
 
 # prepare SQL query
-sql = '''INSERT INTO eth_messages(eth_address, message) VALUES(?,?)'''
+sql = '''INSERT INTO filtered_message(eth_address, message) VALUES(?,?)'''
 
 # execute the SQL statement
 cursor.execute(sql, (eth_address, message))
