@@ -11,7 +11,7 @@ eth_address = '0x123abc...'
 message = 'Thisewkjs a test message.'
 
 # prepare SQL query
-sql = '''INSERT INTO filtered_message(eth_address, message) VALUES(?,?)'''
+sql = '''INSERT INTO filtered_messages(eth_address, message) VALUES(?,?)'''
 
 # execute the SQL statement
 cursor.execute(sql, (eth_address, message))
