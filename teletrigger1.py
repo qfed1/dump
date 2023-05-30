@@ -58,8 +58,10 @@ async def main():
         rows = await fetch_rows_from_db("filtered_gold.db")
         for row in rows:
             msg = str(row)  # convert row data to string
+            # Replace '\n\n' with double new lines and get rid of all '\n'
+            msg = msg.replace('\\n\\n', '\n\n').replace('\\n', '')
             if not await is_sent("sent_messages.db", msg):
-                asyncio.sleep(2)
+                await asyncio.sleep(2)
                 await send_more(chat_id, msg)
                 await mark_as_sent("sent_messages.db", msg)
         await asyncio.sleep(5)  # wait for 5 seconds before polling again
