@@ -8,7 +8,7 @@ cursor = connection.cursor()
 
 # define an Ethereum address and a message for the test entry
 eth_address = '0x123abc...'
-message = 'This is a test message.'
+message = 'Thisewkjs a test message.'
 
 # prepare SQL query
 sql = '''INSERT INTO filtered_message(eth_address, message) VALUES(?,?)'''
