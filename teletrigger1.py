@@ -60,6 +60,7 @@ async def main():
             msg = str(row)  # convert row data to string
             # Replace '\n\n' with double new lines and get rid of all '\n'
             msg = msg.replace('\\n\\n', '\n\n').replace('\\n', '')
+            msg = msg.lstrip("('")  # Remove "(' from the start of each message
             if not await is_sent("sent_messages.db", msg):
                 await asyncio.sleep(2)
                 await send_more(chat_id, msg)
