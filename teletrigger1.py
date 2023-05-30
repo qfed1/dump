@@ -57,9 +57,9 @@ async def main():
     while True:
         rows = await fetch_rows_from_db("filtered_gold.db")
         for row in rows:
-            msg = str(row[1])  # convert second element of tuple to string
+            msg = row[1]  # Get the message from the row
             # Remove unwanted characters
-            msg = msg.lstrip("('").rstrip("')").replace('\\n\\n', '\n\n').replace('\\n', '')
+            msg = msg.replace('\\n\\n', '\n\n').replace('\\n', '')
             if not await is_sent("sent_messages.db", msg):
                 await asyncio.sleep(2)
                 await send_more(chat_id, msg)
