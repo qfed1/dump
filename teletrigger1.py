@@ -61,8 +61,8 @@ async def main():
             msg = row[1]  # Get the message from the row
             # Remove unwanted characters
             msg = msg.replace('\\n\\n', '\n\n').replace('\\n', '')
-            # Add Ethereum address to the beginning of the message
-            full_msg = eth_address + '\n' + msg
+            # Add Ethereum address to the beginning of the message with an extra line of space
+            full_msg = eth_address + '\n\n' + msg
             if not await is_sent("sent_messages.db", full_msg):
                 await asyncio.sleep(2)
                 await send_more(chat_id, full_msg)
