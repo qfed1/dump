@@ -42,11 +42,11 @@ new_db_path = os.path.join(os.getcwd(), 'filter_gold.db')
 conn_new = sqlite3.connect(new_db_path)
 cur_new = conn_new.cursor()
 
-# Create a new table in the new database
-cur_new.execute('CREATE TABLE filtered_messages (eth_address TEXT, message TEXT)')
+# Create a new table in the new database if it doesn't exist already
+cur_new.execute('CREATE TABLE IF NOT EXISTS filtered_messages (eth_address TEXT PRIMARY KEY, message TEXT)')
 
-# Insert the filtered comments into the new table
-cur_new.executemany('INSERT INTO filtered_messages VALUES (?, ?)', filtered_comments)
+# Insert the filtered comments into the new table, but skip if it's a duplicate record
+cur_new.executemany('INSERT OR IGNORE INTO filtered_messages VALUES (?, ?)', filtered_comments)
 
 # Commit the changes and close the connection
 conn_new.commit()
