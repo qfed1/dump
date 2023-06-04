@@ -1,3 +1,6 @@
+
+
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -7,7 +10,7 @@ def get_contract_source(address):
 
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
-        contract_source = soup.find('pre', {'class': 'js-sourcecopyarea', 'id': 'editor'})
+        contract_source = soup.find('div', {'class': 'ace_content'})
         return contract_source.text
     else:
         return None
