@@ -1,4 +1,5 @@
 
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -8,8 +9,12 @@ def get_contract_source(address):
 
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
-        contract_source = soup.select_one('pre.js-sourcecopyarea.editor.ace_editor > div.ace_scroller > div.ace_content')
-        return contract_source.text if contract_source else None
+        contract_source_lines = soup.select('div.ace_content > div.ace_layer.ace_marker-layer > div.ace_line_group')
+
+        # Join the text of each line into one string
+        contract_source = '\n'.join(line.text for line in contract_source_lines)
+
+        return contract_source
     else:
         return None
 
