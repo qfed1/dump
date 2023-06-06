@@ -12,13 +12,9 @@ def get_contract_source(address):
     url = f'https://etherscan.io/address/{address}#code'
     driver.get(url)
 
-    # Wait for two URL changes
+    # Wait for one URL change
     old_url = driver.current_url
-    url_changes = 0
-    while url_changes < 2:
-        if old_url != driver.current_url:
-            old_url = driver.current_url
-            url_changes += 1
+    while old_url == driver.current_url:
         time.sleep(0.5)  # Prevent CPU hogging
 
     # Find the button and click it
