@@ -5,6 +5,16 @@ from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pyperclip
 import subprocess
+from selenium.webdriver.chrome.options import Options
+
+chrome_options = Options()
+chrome_options.add_argument("--headless")  # Ensure GUI is off
+chrome_options.add_argument("--no-sandbox")
+chrome_options.add_argument("--disable-dev-shm-usage")
+
+webdriver_service = Service(ChromeDriverManager().install())
+driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
+
 
 def get_contract_source(address):
     # Setup webdriver
