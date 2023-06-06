@@ -12,8 +12,14 @@ def get_contract_source(address):
     url = f'https://etherscan.io/address/{address}#code'
     driver.get(url)
 
-    # Wait for the user to manually verify that the page is ready
-    input("Press Enter after the Cloudflare check has completed...")
+    # Wait for two URL changes
+    old_url = driver.current_url
+    url_changes = 0
+    while url_changes < 2:
+        if old_url != driver.current_url:
+            old_url = driver.current_url
+            url_changes += 1
+        time.sleep(0.5)  # Prevent CPU hogging
 
     # Find the button and click it
     button = driver.find_element(By.CSS_SELECTOR, "a.js-clipboard.btn.btn-sm.btn-icon.btn-secondary.me-1")
