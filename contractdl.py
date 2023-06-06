@@ -1,13 +1,13 @@
-import undetected_chromedriver as uc
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 import time
 import pyperclip
 
 def get_contract_source(address):
     # Setup webdriver
-    options = uc.ChromeOptions()
+    options = webdriver.ChromeOptions()
     options.add_argument('--disable-extensions')
-    driver = uc.Chrome(executable_path='/usr/bin/chromedriver', options=options)
+    driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver', options=options)
 
     url = f'https://etherscan.io/address/{address}#code'
     driver.get(url)
