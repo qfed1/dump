@@ -4,10 +4,11 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pyperclip
-import asyncio
 import aiosqlite
+import asyncio
 
 def get_contract_source(address):
+    # Setup webdriver
     webdriver_service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=webdriver_service)
 
@@ -16,32 +17,43 @@ def get_contract_source(address):
 
     time.sleep(2)  # Wait for page to load
 
+    # Find the button and click it
     button = driver.find_element(By.CSS_SELECTOR, "a.js-clipboard.btn.btn-sm.btn-icon.btn-secondary.me-1")
     button.click()
 
     time.sleep(2)  # Wait for the clipboard to get the text
 
+    # Get text from clipboard
     contract_source = pyperclip.paste()
 
     driver.quit()
 
     return contract_source
 
-async def read_db_and_scrape():
-    db_path = './filtered_gold.db'  # The path to the db file
+async def main():
+    db_path = './filtered_messages.db'  # The path to the db file
 
+    # Connect to the SQLite database
     async with aiosqlite.connect(db_path) as db:
-        db.row_factory = aiosqlite.Row
+        db.row_factory = aiosqlite.Row  # This enables column access by name: row['column_name'] 
 
-        while True:
+        while True:  # Infinite loop
+            # Get the cursor
             async with db.cursor() as cursor:
+                # Execute the SQL command
                 await cursor.execute('SELECT eth_address FROM filtered_messages')
+
+                # Fetch all rows
                 rows = await cursor.fetchall()
 
                 for row in rows:
-                    contract_source = get_contract_source(row['eth_address'])
+                    # Run the get_contract_source function in a separate thread
+                    loop = asyncio.get_running_loop()
+                    contract_source = await loop.run_in_executor(None, get_contract_source, row['eth_address'])
                     print(contract_source)
 
-            await asyncio.sleep(5)
+            # Sleep for a while before the next loop iteration
+            await asyncio.sleep(5)  # Adjust the sleep duration as needed
 
-asyncio.run(read_db_and_scrape())
+# Run the main function
+asyncio.run(main())
