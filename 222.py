@@ -1,11 +1,8 @@
-from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 import pyperclip
-import aiosqlite
-import asyncio
 
 def get_contract_source(address):
     # Setup webdriver
@@ -30,30 +27,6 @@ def get_contract_source(address):
 
     return contract_source
 
-async def main():
-    db_path = './filtered_messages.db'  # The path to the db file
-
-    # Connect to the SQLite database
-    async with aiosqlite.connect(db_path) as db:
-        db.row_factory = aiosqlite.Row  # This enables column access by name: row['column_name'] 
-
-        while True:  # Infinite loop
-            # Get the cursor
-            async with db.cursor() as cursor:
-                # Execute the SQL command
-                await cursor.execute('SELECT eth_address FROM filtered_messages')
-
-                # Fetch all rows
-                rows = await cursor.fetchall()
-
-                for row in rows:
-                    # Run the get_contract_source function in a separate thread
-                    loop = asyncio.get_running_loop()
-                    contract_source = await loop.run_in_executor(None, get_contract_source, row['eth_address'])
-                    print(contract_source)
-
-            # Sleep for a while before the next loop iteration
-            await asyncio.sleep(5)  # Adjust the sleep duration as needed
-
-# Run the main function
-asyncio.run(main())
+# Example usage:
+address = '0x36a17fbd22fb6b77f55ab797869700b663b026b6'
+print(get_contract_source(address))
