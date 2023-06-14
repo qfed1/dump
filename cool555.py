@@ -3,7 +3,7 @@ import subprocess
 
 # Path to the directory containing the slither executable
 # Replace with your actual path
-slither_dir = "/path/to/slither/directory"
+slither_dir = "/root/Desktop/dump/slither"
 
 # Change to the slither directory
 os.chdir(slither_dir)
