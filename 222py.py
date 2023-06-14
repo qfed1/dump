@@ -11,7 +11,7 @@ def get_contract_source(address):
     webdriver_service = Service(ChromeDriverManager().install())
     
     chrome_options = Options()
-    #chrome_options.add_argument("--headless")  # Ensure GUI is off
+    chrome_options.add_argument("--headless")  # Ensure GUI is off
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     
@@ -20,7 +20,8 @@ def get_contract_source(address):
     url = f'https://etherscan.io/address/{address}#code'
     driver.get(url)
 
-    time.sleep(2)  # Wait for page to load
+    # Pause script and wait for user to press Enter
+    input("Press Enter to continue...")
 
     # Find the button and click it
     button = driver.find_element(By.CSS_SELECTOR, "a.js-clipboard.btn.btn-sm.btn-icon.btn-secondary.me-1")
