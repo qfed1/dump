@@ -41,3 +41,7 @@ def get_contract_source(address):
 # Example usage:
 address = '0x433C8046CfCD5701f1813Dd4988045d205Dd9F62'
 print(get_contract_source(address))
+
+
+with open(f'{address}.sol', 'w') as file:
+    file.write(contract_source)
