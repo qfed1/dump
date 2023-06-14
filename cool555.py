@@ -7,7 +7,7 @@ cwd = os.getcwd()
 # Change to the slither subdirectory
 os.chdir(os.path.join(cwd, "slither"))
 
-command = ["slither", "0x7F37f78cBD74481E593F9C737776F7113d76B315", "--print", "human-summary"]
+command = ["slither", "0x7F37f78cBD74481E593F9C737776F7113d76B315", "test.sol",  "--print", "human-summary"]
 
 # Launch the subprocess with the given command.
 try:
