@@ -15,6 +15,9 @@ def get_contract_source(address):
     url = f'https://etherscan.io/address/{address}#code'
     driver.get(url)
 
+    # Wait for the user to press enter
+    input("Press Enter to start scraping...")
+
     # Wait for one URL change
     old_url = driver.current_url
     while old_url == driver.current_url:
