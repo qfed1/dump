@@ -11,7 +11,7 @@ def get_contract_source(address):
     webdriver_service = Service(ChromeDriverManager().install())
     
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Ensure GUI is off
+    #chrome_options.add_argument("--headless")  # Ensure GUI is off
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     
