@@ -16,7 +16,7 @@ def get_contract_source(address):
     options = uc.ChromeOptions()
 
     # You might want to comment these lines if you don't run on a headless Linux server
-    options.add_argument('--headless')
+    #options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
 
