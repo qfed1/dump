@@ -1,23 +1,18 @@
 import os
 import subprocess
 
-# Get the current working directory
-cwd = os.getcwd()
+# Path to the directory containing the slither executable
+# Replace with your actual path
+slither_dir = "/path/to/slither/directory"
 
-# Change to the slither subdirectory
-os.chdir(os.path.join(cwd, "slither"))
+# Change to the slither directory
+os.chdir(slither_dir)
 
-# Path to the virtual environment's activation script
-venv_path = "~/Desktop/ai/bin/activate"
-
-# Expanding the '~' to the actual home directory path
-venv_path = os.path.expanduser(venv_path)
-
-command = f"source {venv_path} && slither 0xe88e3057Fa90C89CFF2B23c6Ce534F3C227D52F8d --print human-summary"
+command = ["slither", "0xe88e3057Fa90C89CFF2B23c6Ce534F3C227D52F8d", "--print", "human-summary"]
 
 # Launch the subprocess with the given command.
 try:
-    result = subprocess.run(command, check=True, capture_output=True, text=True, shell=True)
+    result = subprocess.run(command, check=True, capture_output=True, text=True)
 except subprocess.CalledProcessError as e:
     print(f"An error occurred while running the command: {e}")
     exit(1)
