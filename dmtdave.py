@@ -44,3 +44,4 @@ def get_contract_source(address):
 # Example usage:
 address = '0x36a17fbd22fb6b77f55ab797869700b663b026b6'
 get_contract_source(address)
+print(get_contract_source(address))
