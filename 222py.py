@@ -1,6 +1,6 @@
 import time
 import pyperclip
-import undetected_chromedriver.v2 as uc
+import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 
 def get_contract_source(address):
