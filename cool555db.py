@@ -10,7 +10,7 @@ slither_dir = "/root/Desktop/dump/slither"
 os.chdir(slither_dir)
 
 # Connect to the SQLite database
-conn = sqlite3.connect('filtered_gold.db')
+conn = sqlite3.connect('/filtered_gold.db')
 
 # Create a cursor
 cur = conn.cursor()
