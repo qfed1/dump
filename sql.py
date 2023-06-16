@@ -28,8 +28,8 @@ def print_db_schema(db_path):
     conn.close()
 
 
-db_path1 = r"C:\Users\evanb\git\AI\NEWFILES\OBEYORDIE\filter_gold.db"
-db_path2 = r"C:\Users\evanb\git\AI\NEWFILES\OBEYORDIE\filtered_gold.db"
+db_path1 = "filter_gold.db"
+db_path2 = "filtered_gold.db"
 
 print_db_schema(db_path1)
 print_db_schema(db_path2)
