@@ -8,7 +8,7 @@ slither_dir = "/root/Desktop/dump/slither"
 # Change to the slither directory
 os.chdir(slither_dir)
 
-command = ["slither", "0xe88e3057Fa90C89CFF2B23c6Ce534F3C227D52F8d", "--print", "human-summary"]
+command = ["slither", "0x22dA8601bD4738A7cb1A935d4990F1C5C0De3769", "--print", "human-summary"]
 
 # Launch the subprocess with the given command.
 try:
